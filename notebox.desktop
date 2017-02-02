@@ -1,0 +1,12 @@
+
+[Desktop Entry]
+Version=1.1.0
+Name=Notebox
+GenericName=Notebox
+Comment=Simply awesome note taking.
+Exec=perl /home/antonio/.notebox/notebox.pl
+Terminal=false
+Icon=/home/antonio/.notebox/notebox.png
+Type=Application
+Categories=Utility
+
