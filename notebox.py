@@ -164,7 +164,7 @@ except:
 
 
 class notes():
-    def __init__(self,title,group,notefile,tstamp,header):
+    def __init__(self, title, group, notefile, tstamp, header):
         self.title = title
         self.group = group
         self.notefile = notefile
@@ -188,7 +188,6 @@ class MyWindow(Gtk.Window):
 
         Gtk.Window.__init__(self, title="Notebox")
         self.set_icon_from_file(APPDIR+"/notes.png")
-
 
         # self.set_default_size(monitor.width-monitor.width/3, monitor.height-monitor.height/3)
         # self.set_border_width(2)
@@ -246,7 +245,7 @@ class MyWindow(Gtk.Window):
         tb_btn_findnote.set_tooltip_text("Find Note")
         toolbar.add(tb_btn_findnote)
 
-        #List
+        # List
         hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         hpaned.set_position(150)
 
@@ -254,66 +253,64 @@ class MyWindow(Gtk.Window):
 
         hpaned.show()
 
-        scrollleft=Gtk.ScrolledWindow()
+        scrollleft = Gtk.ScrolledWindow()
         scrollleft.show()
         scrollleft.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
 
         ###########################
         #                              grpname, icon name,type
-        #self.LStr_grps = Gtk.ListStore(str,str,str)
+        # self.LStr_grps = Gtk.ListStore(str,str,str)
 
         self.rmenu = Gtk.Menu()
         self.delitem = Gtk.MenuItem("Delete...")
         self.renitem = Gtk.MenuItem("Rename...")
         self.rmenu.append(self.delitem)
         self.rmenu.append(self.renitem)
-        self.delitem.connect("activate",self.on_menudel)
-        self.renitem.connect("activate",self.on_menuren)
+        self.delitem.connect("activate", self.on_menudel)
+        self.renitem.connect("activate", self.on_menuren)
         self.delitem.show()
         self.renitem.show()
 
-        self.LStr_grps =self.__db_loadnotegroups()
+        self.LStr_grps = self.__db_loadnotegroups()
 
-        if len(self.LStr_grps) == 1 :
+        if len(self.LStr_grps) == 1:
             self.__db_addnotegroup()
 
         self.treeviewgrps = Gtk.TreeView(model=self.LStr_grps)
-        self.treeviewgrps.set_rules_hint (True)
+        self.treeviewgrps.set_rules_hint(True)
 
         treeviewgrpcolumn = Gtk.TreeViewColumn("Note Groups")
         self.treeviewgrps.append_column(treeviewgrpcolumn)
         self.treeviewgrps.connect("row-activated", self.on_treeviewgrp_activated)
-        self.treeviewgrps.connect("button_press_event",self.on_treeviegrp_event)
+        self.treeviewgrps.connect("button_press_event", self.on_treeviegrp_event)
         cellrenderertextgrp = Gtk.CellRendererText()
         treeviewgrpcolumn.pack_start(cellrenderertextgrp, True)
         treeviewgrpcolumn.add_attribute(cellrenderertextgrp, "text", 0)
-        #self.treeviewgrps.set_grid_lines(1)
+        # self.treeviewgrps.set_grid_lines(1)
         self.treeviewgrps.set_activate_on_single_click(True)
         self.treeviewgrps.set_headers_visible(False)
 
         cellrendererpixbuf = Gtk.CellRendererPixbuf()
-        treeviewcolumn =  Gtk.TreeViewColumn("", cellrendererpixbuf, icon_name=1)
+        treeviewcolumn = Gtk.TreeViewColumn("", cellrendererpixbuf, icon_name=1)
         self.treeviewgrps.append_column(treeviewcolumn)
-        #treeviewcolumn.pack_start(cellrendererpixbuf, False)
-        #treeviewcolumn.add_attribute(cellrendererpixbuf, "pixbuf", 1)
+        # treeviewcolumn.pack_start(cellrendererpixbuf, False)
+        # treeviewcolumn.add_attribute(cellrendererpixbuf, "pixbuf", 1)
 
-
-       #########################
+       # ########################
         scrollleft.add(self.treeviewgrps)
 
         hpaned.add1(scrollleft)
 
-
-        scrollright=Gtk.ScrolledWindow()
+        scrollright = Gtk.ScrolledWindow()
         scrollright.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
         #                               title+header,title,group,filepath o evernote
-        self.LStr_notes = Gtk.ListStore(str,str,str,str)
+        self.LStr_notes = Gtk.ListStore(str, str, str, str)
         self.__db_reloadnotes()
 
         self.treeviewnotes = Gtk.TreeView(model=self.LStr_notes)
-        self.treeviewnotes.set_rules_hint (True)
+        self.treeviewnotes.set_rules_hint(True)
         treeviewnotecolumn = Gtk.TreeViewColumn("Notes")
         self.treeviewnotes.append_column(treeviewnotecolumn)
         self.treeviewnotes.connect("row-activated", self.on_treeviewnote_activated)
@@ -322,7 +319,7 @@ class MyWindow(Gtk.Window):
         treeviewnotecolumn.add_attribute(cellrenderertextnote, "text", 0)
         self.treeviewnotes.set_grid_lines(1)
 
-        #hboxlists.pack_start(self.treeview, True, True, 0)
+        # hboxlists.pack_start(self.treeview, True, True, 0)
         scrollright.add(self.treeviewnotes)
         hpaned.add2(scrollright)
 
@@ -330,55 +327,58 @@ class MyWindow(Gtk.Window):
 
         self.add(vboxnote)
 
+    # Toolbar callback funcs ############################################
 
-    #Toolbar callback funcs ############################################
-
-    def delete_event(self,window,event):
-        #don't delete; hide instead
+    def delete_event(self, window, event):
+        # don't delete; hide instead
         self.hide_on_delete()
-        #self.statusicon.set_tooltip("the window is hidden")
+        # self.statusicon.set_tooltip("the window is hidden")
         return True
 #################################################################################
+
     def on_addbutton_clicked(self, widget):
         print "addnote"
         os.system(APPDIR+"/addnote.py")
 #################################################################################
+
     def on_delbutton_clicked(self, widget):
         print "delete note"
         treeselection = self.treeviewnotes.get_selection()
-        nitems=treeselection.count_selected_rows()
+        nitems = treeselection.count_selected_rows()
         if nitems == 0:
-            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error!")
+            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error!")
             errdialog.format_secondary_text("Select a note to delete!")
             errdialog.run()
             errdialog.destroy()
         else:
-            model,iter_=treeselection.get_selected()
-            #item=model.get(iter_,0)
-            #group=model[iter_][0]
+            model, iter_ = treeselection.get_selected()
+            # item=model.get(iter_,0)
+            # group=model[iter_][0]
 
-            title,group,filepath=model[iter_][1],model[iter_][2],model[iter_][3]
+            title, group, filepath = model[iter_][1], model[iter_][2], model[iter_][3]
             messagedialog = Gtk.MessageDialog(message_format="Are you sure?")
 
             messagedialog.set_property("message-type", Gtk.MessageType.ERROR)
-            messagedialog.add_button("OK",Gtk.ResponseType.OK)
-            messagedialog.add_button("Cancel",Gtk.ResponseType.CANCEL)
+            messagedialog.add_button("OK", Gtk.ResponseType.OK)
+            messagedialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
 
-            resp=messagedialog.run()
+            resp = messagedialog.run()
 
-            if resp==Gtk.ResponseType.OK:
+            if resp == Gtk.ResponseType.OK:
                 self.LStr_notes.remove(iter_)
-                #remove from notes db
-                self.__db_delnote(title,group,filepath)
+                # remove from notes db
+                self.__db_delnote(title, group, filepath)
 
             messagedialog.destroy()
 ############################################################################
+
     def on_reloadbutton_clicked(self, widget):
-        newlistagrp=self.__db_loadnotegroups()
+        newlistagrp = self.__db_loadnotegroups()
         self.treeviewgrps.set_model(newlistagrp)
         self.__db_reloadnotes()
         self.treeviewnotes.set_model(self.LStr_notes)
 ############################################################################
+
     def on_settingsbutton_clicked(self, widget):
         global G_EVERNOTEFLAG
         global G_EVERNOTENOTEBLIST
@@ -394,8 +394,8 @@ class MyWindow(Gtk.Window):
         global G_ENCFSFLAG
         global G_ENCFSDIR
 
-        evernnb1=""
-        evernnb2=""
+        evernnb1 = ""
+        evernnb2 = ""
 
         dialog = Gtk.Dialog(title="Settings", buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
         vboxdiag = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -406,7 +406,7 @@ class MyWindow(Gtk.Window):
         vboxdiag.pack_start(listbox, True, True, 0)
 
         row = Gtk.ListBoxRow()
-        hbox_drp = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_drp = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_drp)
 
         labeldrp = Gtk.Label("", xalign=0)
@@ -416,13 +416,12 @@ class MyWindow(Gtk.Window):
         switch_drp = Gtk.Switch()
         switch_drp.connect("notify::active", self.switchdrp_toggled)
 
-
         hbox_drp.pack_start(switch_drp, True, True, 0)
 
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_drp2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_drp2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_drp2)
 
         labeldrp2 = Gtk.Label("Dropbox Folder", xalign=0)
@@ -435,7 +434,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_drp3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_drp3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_drp3)
 
         labeldrp3 = Gtk.Label("Setting: ", xalign=0)
@@ -447,16 +446,16 @@ class MyWindow(Gtk.Window):
 
         if G_DROPBOXFLAG == "1":
             switch_drp.set_active(True)
-            self.drpfolder=G_DROPBOXDIR
+            self.drpfolder = G_DROPBOXDIR
             labeldrp4.set_text(G_DROPBOXDIR)
         else:
             switch_drp.set_active(False)
-            self.drpfolder=""
+            self.drpfolder = ""
             self.buttondrp.set_sensitive(False)
 
 ####################################################
         row = Gtk.ListBoxRow()
-        hbox_minutes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_minutes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_minutes)
 
         labelmin = Gtk.Label("", xalign=0)
@@ -471,7 +470,7 @@ class MyWindow(Gtk.Window):
 
         row = Gtk.ListBoxRow()
 
-        hbox_minutes2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_minutes2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_minutes2)
         labelmin2 = Gtk.Label("Set Minutes Folder", xalign=0)
         hbox_minutes2.pack_start(labelmin2, True, True, 0)
@@ -482,7 +481,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_min3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_min3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_min3)
 
         labelmin3 = Gtk.Label("Setting: ", xalign=0)
@@ -493,16 +492,16 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
         if G_MINUTESFLAG == "1":
             switch_minutes.set_active(True)
-            self.minfolder=G_MINUTESDIR
+            self.minfolder = G_MINUTESDIR
             labelmin4.set_text(G_MINUTESDIR)
         else:
             switch_minutes.set_active(False)
-            self.minfolder=""
+            self.minfolder = ""
             self.buttonmin.set_sensitive(False)
 
 ####################################################
         row = Gtk.ListBoxRow()
-        hbox_mynotes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_mynotes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_mynotes)
 
         labelmyn = Gtk.Label("", xalign=0)
@@ -517,7 +516,7 @@ class MyWindow(Gtk.Window):
 
         row = Gtk.ListBoxRow()
 
-        hbox_mynotes2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_mynotes2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_mynotes2)
         labelmyn2 = Gtk.Label("Set My Notes Gear Folder", xalign=0)
         hbox_mynotes2.pack_start(labelmyn2, True, True, 0)
@@ -528,7 +527,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_myn3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_myn3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_myn3)
 
         labelmyn3 = Gtk.Label("Setting: ", xalign=0)
@@ -539,16 +538,16 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
         if G_MYNOTESGEARFLAG == "1":
             switch_mynotes.set_active(True)
-            self.mynfolder=G_MYNOTESGEARDIR
+            self.mynfolder = G_MYNOTESGEARDIR
             labelmyn4.set_text(G_MYNOTESGEARDIR)
         else:
             switch_mynotes.set_active(False)
-            self.mynfolder=""
+            self.mynfolder = ""
             self.buttonmyn.set_sensitive(False)
 
 ####################################################
         row = Gtk.ListBoxRow()
-        hbox_encfs = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_encfs = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_encfs)
 
         labelencfs = Gtk.Label("", xalign=0)
@@ -563,7 +562,7 @@ class MyWindow(Gtk.Window):
 
         row = Gtk.ListBoxRow()
 
-        hbox_encfs2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_encfs2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_encfs2)
         labelencfs2 = Gtk.Label("Set Private Folder", xalign=0)
         hbox_encfs2.pack_start(labelencfs2, True, True, 0)
@@ -574,7 +573,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_encfs3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_encfs3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_encfs3)
 
         labelencfs3 = Gtk.Label("Setting: ", xalign=0)
@@ -585,16 +584,16 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
         if G_ENCFSFLAG == "1":
             switch_encfs.set_active(True)
-            self.encfsfolder=G_ENCFSDIR
+            self.encfsfolder = G_ENCFSDIR
             labelencfs4.set_text(G_ENCFSDIR)
         else:
             switch_encfs.set_active(False)
-            self.encfsfolder=""
+            self.encfsfolder = ""
             self.buttonencfs.set_sensitive(False)
 
 ####################################################
         row = Gtk.ListBoxRow()
-        hbox_evern1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_evern1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_evern1)
 
         labelevern = Gtk.Label("", xalign=0)
@@ -609,7 +608,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_evern2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_evern2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_evern2)
         labelevernselect1 = Gtk.Label("Notebooks Selected:", xalign=0)
         hbox_evern2.pack_start(labelevernselect1, True, True, 0)
@@ -619,7 +618,7 @@ class MyWindow(Gtk.Window):
         listbox.add(row)
 
         row = Gtk.ListBoxRow()
-        hbox_evern3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=50)
+        hbox_evern3 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
         row.add(hbox_evern3)
         labelevernselect2 = Gtk.Label("Press to select Notebooks", xalign=0)
         hbox_evern3.pack_start(labelevernselect2, True, True, 0)
@@ -631,15 +630,15 @@ class MyWindow(Gtk.Window):
 
         if G_EVERNOTEFLAG == "1":
             switch_evern.set_active(True)
-            if len(G_EVERNOTENOTEBLIST)>20:
-                s = G_EVERNOTENOTEBLIST[ 1 : 1 + 20] +"..."
+            if len(G_EVERNOTENOTEBLIST) > 20:
+                s = G_EVERNOTENOTEBLIST[ 1 : 1 + 20] + "..."
                 self.labelevernnblist.set_text(s)
             else:
                 self.labelevernnblist.set_text(G_EVERNOTENOTEBLIST)
         else:
             switch_evern.set_active(False)
 
-        box=dialog.get_content_area()
+        box = dialog.get_content_area()
         box.add(vboxdiag)
         vboxdiag.show_all()
 
@@ -649,61 +648,61 @@ class MyWindow(Gtk.Window):
             if switch_drp.get_active():
                 if G_DROPBOXFLAG == "0" and os.path.isdir(self.drpfolder):
                     G_DROPBOXFLAG = "1"
-                    G_DROPBOXDIR=self.drpfolder
-                    f = open(NOTEBOXCONF,"a")
+                    G_DROPBOXDIR = self.drpfolder
+                    f = open(NOTEBOXCONF, "a")
                     f.write("DROPBOX=1")
                     f.write("DROPBOXDIR="+G_DROPBOXDIR)
                     f.close()
                 if os.path.isdir(self.drpfolder) and self.drpfolder != G_DROPBOXDIR:
                     print "DD 1"
-                    G_DROPBOXDIR=self.drpfolder
+                    G_DROPBOXDIR = self.drpfolder
                     os.system("cat "+NOTEBOXCONF+" | grep -vE 'DROPBOXDIR=|DROPBOX=' | tee  "+NOTEBOXCONF)
                     G_DROPBOXFLAG = "1"
-                    G_DROPBOXDIR=self.drpfolder
-                    f = open(NOTEBOXCONF,"a")
+                    G_DROPBOXDIR = self.drpfolder
+                    f = open(NOTEBOXCONF, "a")
                     f.write("DROPBOX=1\n")
                     f.write("DROPBOXDIR="+G_DROPBOXDIR+"\n")
                     f.close()
 
             if switch_minutes.get_active():
                 if G_MINUTESFLAG == "0" and os.path.isdir(self.minfolder):
-                    G_MINUTESDIR=self.minfolder
+                    G_MINUTESDIR = self.minfolder
                     print "DD 2"
                     os.system("cat "+NOTEBOXCONF+" | grep -vE 'MINUTESDIR=|MINUTES=' | tee  "+NOTEBOXCONF)
                     G_MINUTESFLAG = "1"
-                    G_MINUTESDIR=self.minfolder
-                    f = open(NOTEBOXCONF,"a")
+                    G_MINUTESDIR = self.minfolder
+                    f = open(NOTEBOXCONF, "a")
                     f.write("MINUTES=1\n")
                     f.write("MINUTESDIR="+G_MINUTESDIR+"\n")
                     f.close()
             if switch_evern.get_active():
                 if G_EVERNOTENOTEBLIST == "":
-                    G_EVERNOTEFLAG="0"
+                    G_EVERNOTEFLAG = "0"
                     print "DD 3"
                     os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
-                    errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Saving settings")
+                    errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Saving settings")
                     errdialog.format_secondary_text("No Evernote notebooks selected!")
                     errdialog.run()
                     errdialog.destroy()
                 else:
                     if G_EVERNOTEFLAG == "0":
                         os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
-                        f = open(NOTEBOXCONF,"a")
+                        f = open(NOTEBOXCONF, "a")
                         f.write("EVERNOTE=1\n")
                         f.write("EVERNOTENOTEBLIST="+G_EVERNOTENOTEBLIST+"\n")
                         f.close()
         dialog.destroy()
 
 #########################################################
-    def on_findbutton_activated(self,widget):
-        text=widget.get_text()
+    def on_findbutton_activated(self, widget):
+        text = widget.get_text()
 
-        foundlist=[]
+        foundlist = []
 
         if len(text) > 0:
-            #Find in native list
+            # Find in native list
             for i in range(len(self.LStr_notes)):
-                #ith element in list
+                # ith element in list
                 path = Gtk.TreePath(i)
                 treeiter = self.LStr_notes.get_iter(path)
                 # Get value at 1st column
@@ -712,53 +711,53 @@ class MyWindow(Gtk.Window):
                 value3 = self.LStr_notes.get_value(treeiter, 2)
                 value4 = self.LStr_notes.get_value(treeiter, 3)
                 if text.lower() in value1.lower():
-                    #print "AA "+value1
-                    foundlist.append([value1,value2,value3,value4])
-            #Find in Minutes
-            if G_MINUTESFLAG == "1" and  os.path.isdir(G_MINUTESDIR):
+                    # print "AA "+value1
+                    foundlist.append([value1, value2, value3, value4])
+            # Find in Minutes
+            if G_MINUTESFLAG == "1" and os.path.isdir(G_MINUTESDIR):
                 try:
                     output = subprocess.check_output("ls -1 "+G_MINUTESDIR+"/*.txt", shell=True)
-                    tmplist=output.split("\n")
+                    tmplist = output.split("\n")
                     for item in tmplist:
                         if item != "":
-                            header=""
+                            header = ""
                             try:
-                                header=subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                                header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
                             except:
-                                header=""
+                                header = ""
                             if text.lower() in header.lower():
-                                #self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
-                                foundlist.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
+                                # self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
+                                foundlist.append(["** "+basename(item)+"** \n"+header, basename(item), "Minutes", item])
                 except:
                     print "No notes in Minutes"
-            #Find in Private
+            # Find in Private
             if G_ENCFSFLAG == "1" and os.path.isdir(G_ENCFSDIR):
                 try:
                     output = subprocess.check_output("ls -1 "+G_ENCFSDIR+"/*.txt", shell=True)
-                    tmplist=output.split("\n")
+                    tmplist = output.split("\n")
                     for item in tmplist:
                         if item != "":
-                            header=""
+                            header = ""
                             try:
-                                header=subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                                header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
                             except:
-                                header=""
+                                header = ""
                             if text.lower() in header.lower():
-                                #self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
-                                foundlist.append(["** "+basename(item)+"** \n"+header,basename(item),"Private",item])
+                                # self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
+                                foundlist.append(["** "+basename(item)+"** \n"+header, basename(item), "Private", item])
                 except:
                     print "No notes in Encripted directory Private"
 
-            #recreate liststore with ocurrences
+            # recreate liststore with ocurrences
             if len(foundlist) == 0:
-                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Attention!")
+                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Attention!")
                 errdialog.format_secondary_text("Can't find string in note list!")
                 errdialog.run()
                 errdialog.destroy()
             else:
                 self.LStr_notes.clear()
                 for item in foundlist:
-                    self.LStr_notes.append([item[0],item[1],item[2],item[3]])
+                    self.LStr_notes.append([item[0], item[1], item[2], item[3]])
 
 #########################################################
     def on_drpfolder_clicked(self, widget):
@@ -770,10 +769,11 @@ class MyWindow(Gtk.Window):
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            #print("Select clicked")
-            self.drpfolder=dialog.get_filename()
+            # print("Select clicked")
+            self.drpfolder = dialog.get_filename()
         dialog.destroy()
 #########################################################
+
     def on_minfolder_clicked(self, widget):
         global G_MINUTEDIR
         global HomeDir
@@ -786,8 +786,8 @@ class MyWindow(Gtk.Window):
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            #print("Select clicked")
-            minfolder=dialog.get_filename()
+            # print("Select clicked")
+            minfolder = dialog.get_filename()
             if minfolder != "" and os.path.isdir(minfolder):
                 os.system(APPDIR+"/setupminutes.sh "+minfolder+" "+G_MINUTEDIR)
         dialog.destroy()
@@ -805,8 +805,8 @@ class MyWindow(Gtk.Window):
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            #print("Select clicked")
-            mynfolder=dialog.get_filename()
+            # print("Select clicked")
+            mynfolder = dialog.get_filename()
             if mynfolder != "" and os.path.isdir(mynfolder):
                 os.system(APPDIR+"/setupmynotesgear.sh "+mynfolder+" "+G_MYNOTESGEARDIR)
         dialog.destroy()
@@ -824,20 +824,22 @@ class MyWindow(Gtk.Window):
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            #print("Select clicked")
-            encfsfolder=dialog.get_filename()
+            # print("Select clicked")
+            encfsfolder = dialog.get_filename()
             if encfsfolder != "" and os.path.isdir(encfsfolder):
                 os.system(APPDIR+"/setupencfs.sh "+encfsfolder+" "+G_ENCFSDIR)
         dialog.destroy()
 #########################################################
-    def switchdrp_toggled(self,switch,state):
+
+    def switchdrp_toggled(self, switch, state):
         if switch.get_active():
             self.buttondrp.set_sensitive(True)
 
         else:
             self.buttondrp.set_sensitive(False)
 #########################################################
-    def switchmin_toggled(self,switch,state):
+
+    def switchmin_toggled(self, switch, state):
         if switch.get_active():
             self.buttonmin.set_sensitive(True)
 
@@ -845,98 +847,100 @@ class MyWindow(Gtk.Window):
             self.buttonmin.set_sensitive(False)
 
 #########################################################
-    def switchmyn_toggled(self,switch,state):
+    def switchmyn_toggled(self, switch, state):
         if switch.get_active():
             self.buttonmyn.set_sensitive(True)
         else:
             self.buttonmyn.set_sensitive(False)
 
 #########################################################
-    def switchencfs_toggled(self,switch,state):
+
+    def switchencfs_toggled(self, switch, state):
         if switch.get_active():
             self.buttonencfs.set_sensitive(True)
 
         else:
             self.buttonencfs.set_sensitive(False)
-######Right menu ########################
-    def on_treeviegrp_event(self,widget,event):
+# #####Right menu ########################
+
+    def on_treeviegrp_event(self, widget, event):
         print "aa"
         time = event.time
         if event.button == 3:
             self.rmenu.popup(None, None, None, None, event.button, time)
             self.rmenu.show_all()
 ############################################
-    def on_menuren(self, widget ):
-        treesel=self.treeviewgrps.get_selection()
-        model,iter_=treesel.get_selected()
-        item=model.get(iter_,0)
-        group=model[iter_][0]
-        grptype=model[iter_][2]
 
-        if grptype=="folder":
+    def on_menuren(self, widget):
+        treesel = self.treeviewgrps.get_selection()
+        model, iter_ = treesel.get_selected()
+        item = model.get(iter_, 0)
+        group = model[iter_][0]
+        grptype = model[iter_][2]
+
+        if grptype == "folder":
             messagedialog = Gtk.MessageDialog(message_format="Rename note group "+group+"? \nAre you sure?")
 
             messagedialog.set_property("message-type", Gtk.MessageType.ERROR)
-            messagedialog.add_button("OK",Gtk.ResponseType.OK)
-            messagedialog.add_button("Cancel",Gtk.ResponseType.CANCEL)
+            messagedialog.add_button("OK", Gtk.ResponseType.OK)
+            messagedialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
 
-            resp=messagedialog.run()
-            if resp==Gtk.ResponseType.OK:
-                self.__db_rennotegroup(group,iter_)
+            resp = messagedialog.run()
+            if resp == Gtk.ResponseType.OK:
+                self.__db_rennotegroup(group, iter_)
 
 
 #####################################################
-    def on_menudel(self, widget ):
-        treesel=self.treeviewgrps.get_selection()
-        model,iter_=treesel.get_selected()
-        item=model.get(iter_,0)
-        group=model[iter_][0]
-        grptype=model[iter_][2]
+    def on_menudel(self, widget):
+        treesel = self.treeviewgrps.get_selection()
+        model, iter_ = treesel.get_selected()
+        item = model.get(iter_, 0)
+        group = model[iter_][0]
+        grptype = model[iter_][2]
 
-        if group!="Add Group..." and grptype!="evernote" and grptype!="reminders" and grptype!="minutes" and grptype!="private":
+        if group != "Add Group..." and grptype != "evernote" and grptype != "reminders" and grptype != "minutes" and grptype != "private":
             print "Siiii"
             messagedialog = Gtk.MessageDialog(message_format="Delete note group "+group+"? \nAll notes in this group will be deleted too!")
 
             messagedialog.set_property("message-type", Gtk.MessageType.ERROR)
-            messagedialog.add_button("OK",Gtk.ResponseType.OK)
-            messagedialog.add_button("Cancel",Gtk.ResponseType.CANCEL)
+            messagedialog.add_button("OK", Gtk.ResponseType.OK)
+            messagedialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
 
-            resp=messagedialog.run()
-            if resp==Gtk.ResponseType.OK:
+            resp = messagedialog.run()
+            if resp == Gtk.ResponseType.OK:
 
-                #remove from listore
-                #self.LStr_notes.remove(treeiter)
+                # remove from listore
+                # self.LStr_notes.remove(treeiter)
                 self.LStr_grps.remove(iter_)
 
-                #remove group from db
+                # remove group from db
                 self.__db_delgrp(group)
-                #remove notes for this group
+                # remove notes for this group
                 self.__db_delnotesbygrp(group)
 
-                newlistagrp=self.__db_loadnotegroups()
+                newlistagrp = self.__db_loadnotegroups()
                 self.treeviewgrps.set_model(newlistagrp)
                 self.__db_reloadnotes()
                 self.treeviewnotes.set_model(self.LStr_notes)
 
-
             messagedialog.destroy()
         else:
-            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error!")
+            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error!")
             errdialog.format_secondary_text("Group cannot be deleted!")
             errdialog.run()
             errdialog.destroy()
 
-    def on_buttonever_clicked(self,widget):
+    def on_buttonever_clicked(self, widget):
         global G_EVERNOTENOTEBLIST
         global NOTEBOXCONF
 
         dialog = Gtk.Dialog(title="Select Evernote Notebooks", buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
         vboxdiag = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
 
-        nbliststr= Gtk.ListStore(str)
-        scroll=Gtk.ScrolledWindow()
+        nbliststr = Gtk.ListStore(str)
+        scroll = Gtk.ScrolledWindow()
         scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll.set_size_request(300,200)
+        scroll.set_size_request(300, 200)
 
         treelist = Gtk.TreeView(model=nbliststr)
         treeviewcolumn = Gtk.TreeViewColumn("Notebooks")
@@ -946,14 +950,13 @@ class MyWindow(Gtk.Window):
         treeviewcolumn.pack_start(cellrenderertext, True)
         treeviewcolumn.add_attribute(cellrenderertext, "text", 0)
 
-
         treeselection = treelist.get_selection()
-        treeselection.set_mode(3)  #Multiple
+        treeselection.set_mode(3)  # Multiple
 
         scroll.add(treelist)
         vboxdiag.pack_start(scroll, True, True, 0)
 
-        box=dialog.get_content_area()
+        box = dialog.get_content_area()
         box.add(vboxdiag)
         vboxdiag.show_all()
 
@@ -967,82 +970,83 @@ class MyWindow(Gtk.Window):
             content = subprocess.check_output("geeknote notebook-list | grep -v Total | cut -d: -f 2", shell=True)
         except:
             os.system("killall zenity &")
-            content=""
-            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Connecting to Evernote")
+            content = ""
+            errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Connecting to Evernote")
             errdialog.format_secondary_text("Error obtaining notebook list!")
             errdialog.run()
             errdialog.destroy()
 
-        nblist=content.split("\n")
+        nblist = content.split("\n")
 
         if len(nblist) > 0:
-            for item in  nblist:
+            for item in nblist:
                 nbliststr.append([item.lstrip(" ")])
             os.system("killall zenity &")
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
                 (model, pathlist) = treeselection.get_selected_rows()
-                nblist=""
-                i=0
-                for item in  pathlist:
+                nblist = ""
+                i = 0
+                for item in pathlist:
                     print model[item][0]
                     if i == 0:
-                        nblist=model[item][0]
+                        nblist = model[item][0]
                     else:
-                        nblist=nblist+","+model[item][0]
-                    i=i+1
+                        nblist = nblist+","+model[item][0]
+                    i = i+1
                 if nblist != "":
                     if nblist != G_EVERNOTENOTEBLIST:
-                        G_EVERNOTENOTEBLIST=nblist
+                        G_EVERNOTENOTEBLIST = nblist
                         os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
-                        f = open(NOTEBOXCONF,"a")
+                        f = open(NOTEBOXCONF, "a")
                         f.write("EVERNOTE=1\n")
                         f.write("EVERNOTENOTEBLIST="+G_EVERNOTENOTEBLIST)+"\n"
                         f.close()
                         self.labelevernnblist.set_text(G_EVERNOTENOTEBLIST)
                 else:
-                    errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error in notebook list")
+                    errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error in notebook list")
                     errdialog.format_secondary_text("List is empty. Please select notebooks!")
                     errdialog.run()
                     errdialog.destroy()
 
-
         dialog.destroy()
+
+
 #########################################################
-    def on_notebooklist_activated(self,widget,path,column):
+    def on_notebooklist_activated(self, widget, path, column):
         print "add group"
-    def switchevern_toggled(self,switch,state):
+
+    def switchevern_toggled(self, switch, state):
         if switch.get_active():
             self.buttonever.set_sensitive(True)
         else:
             self.buttonever.set_sensitive(False)
 
-
     def on_addgrpbutton_clicked(self, widget):
         print "add group"
 
-###### Lists Callbacks ################################################
-    def on_treeviewgrp_activated(self,widget,path,column):
+# ##### Lists Callbacks ################################################
+    def on_treeviewgrp_activated(self, widget, path, column):
         print "row activated "
-        treesel=self.treeviewgrps.get_selection()
-        model,iter_=treesel.get_selected()
-        item=model.get(iter_,0)
-        group=model[iter_][0]
-        grptype=model[iter_][2]
-        if group=="Add Group...":
+        treesel = self.treeviewgrps.get_selection()
+        model, iter_= treesel.get_selected()
+        item = model.get(iter_, 0)
+        group = model[iter_][0]
+        grptype = model[iter_][2]
+        if group == "Add Group...":
             self.__db_addnotegroup()
         else:
-            print "XX "+group +" - "+grptype
-            self.__db_loadnotesbygrp(group,grptype)
+            print "XX "+group + " - " + grptype
+            self.__db_loadnotesbygrp(group, grptype)
 
 #####################################################################
 
     def on_treeviewnote_activated(self, widget, path, column):
         print "row activated: "
         treesel = self.treeviewnotes.get_selection()
-        model, iter_= treesel.get_selected()
+        model, iter_ = treesel.get_selected()
         item = model.get(iter_, 0)
-        title, group, filepath = model[iter_][1],model[iter_][2],model[iter_][3]
+        title, group, filepath = model[iter_][1], model[iter_][2], model[iter_][3]
         # print model[iter_][0]+"--"+model[iter_][1]+"--"+model[iter_][2]
         print APPDIR+"/opennote.py -t '"+title+"' -g "+group+" -f \""+filepath+"\""
         os.system(APPDIR+"/opennote.py -t '"+title+"' -g "+group+" -f \""+filepath+"\" &")
@@ -1082,7 +1086,7 @@ class MyWindow(Gtk.Window):
             else:
                 result = os.system("mkdir "+BASEDIR+"/"+group)
                 if result == 0:
-                    self.LStr_grps.insert(pos, [group,"folder","folder"])
+                    self.LStr_grps.insert(pos, [group, "folder", "folder"])
                     seld.LStr_grps.remove(pos)
 
                 else:
@@ -1106,24 +1110,24 @@ class MyWindow(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             groupname = entrygrp.get_text()
             if groupname == "":
-                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error Creating Group")
+                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error Creating Group")
                 errdialog.format_secondary_text("No name specified!")
                 errdialog.run()
                 errdialog.destroy()
             elif groupname == "Minutes" or groupname == "Private":
-                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error Creating Group")
+                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error Creating Group")
                 errdialog.format_secondary_text("Group name is reserved. Try another one!")
                 errdialog.run()
                 errdialog.destroy()
             elif os.path.isdir(BASEDIR+"/"+groupname):
-                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,Gtk.ButtonsType.OK, "Error Creating Group")
+                errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error Creating Group")
                 errdialog.format_secondary_text("Group already exists!")
                 errdialog.run()
                 errdialog.destroy()
             else:
                 result = os.system("mkdir "+BASEDIR+"/"+groupname)
                 if result == 0:
-                    self.LStr_grps.append([groupname,"folder","folder"])
+                    self.LStr_grps.append([groupname, "folder", "folder"])
 
                     # self.__db_loadnotegroups()
                 else:
@@ -1184,7 +1188,6 @@ class MyWindow(Gtk.Window):
         return newlist
 ###################################################################
 
-
     def __db_reloadnotes(self):
         del self.notelist[:]
         del self.sortnotelist[:]
@@ -1211,37 +1214,37 @@ class MyWindow(Gtk.Window):
                 # self.LStr_notes.append([n.title])
         f.close()
 
-         #####Load Private notes
-        #if G_ENCFSFLAG=="1" and os.path.isdir(G_ENCFSDIR):
-            #try:
-                #output = subprocess.check_output("ls -1 "+G_ENCFSDIR+"/*.txt", shell=True)
-                #tmplist=output.split("\n")
-                #for item in tmplist:
-                    #if item != "":
-                        #header=""
-                        #try:
-                            #header=subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
-                        #except:
-                            #header=""
-                        #n=notes(basename(item)+"\n"+header,"Private",item,int(time.time()),header)
-                        #self.notelist.append(n)
-                        ##self.LStr_notes.append([n.title])
-                        #notelist.append([n.title,n.group,n.notestamp,item,n.header])
-            #except:
-                 #print "No notes in Private Dir"
-        self.sortnotelist=sorted(notelist, key=getKey,reverse=True)   #reverse=True
+         # ####Load Private notes
+        # if G_ENCFSFLAG=="1" and os.path.isdir(G_ENCFSDIR):
+            # try:
+                # output = subprocess.check_output("ls -1 "+G_ENCFSDIR+"/*.txt", shell=True)
+                # tmplist=output.split("\n")
+                # for item in tmplist:
+                    #i f item != "":
+                        # header=""
+                        # try:
+                            # header=subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                        # except:
+                            # header=""
+                        # n=notes(basename(item)+"\n"+header,"Private",item,int(time.time()),header)
+                        # self.notelist.append(n)
+                        # #self.LStr_notes.append([n.title])
+                        # notelist.append([n.title,n.group,n.notestamp,item,n.header])
+            #e xcept:
+                 # print "No notes in Private Dir"
+        self.sortnotelist = sorted(notelist, key=getKey, reverse=True)
         for item in  self.sortnotelist:
             #print "CC "+item[0]+"-"+item[1]+"-"+item[3]+"--"+item[2]
-            self.LStr_notes.append(["** "+item[0]+" **\n"+item[4],item[0],item[1],item[3]])
+            self.LStr_notes.append(["** "+item[0]+" **\n"+item[4], item[0], item[1], item[3]])
 
 ################################################################
-    def __db_delnotesbygrp(self,group):
+    def __db_delnotesbygrp(self, group):
         os.system("cp -p "+G_NOTESDAT+" /tmp/notebox.dat")
-        w=open(G_NOTESDAT,"w")
-        with open("/tmp/notebox.dat","r") as f:
+        w = open(G_NOTESDAT, "w")
+        with open("/tmp/notebox.dat", "r") as f:
             for line in f:
                 if len(line) > 0:
-                    values=line.split(';')
+                    values = line.split(';')
                     if values[1] != group:
                         w.write(line)
         w.close()

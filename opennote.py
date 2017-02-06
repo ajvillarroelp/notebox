@@ -198,8 +198,9 @@ class MyWindow(Gtk.Window):
         global APP
         if filename != "evernote":
             if grp == "MyNotesGear":
-                # print "Not supported yet!"
-                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Note\": \""+content+"\"/' "+filename)
+                print "sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content.rstrip('\n')+"\"/g' "+filename
+                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content.rstrip('\n')+"\"/g' "+filename)
+                # os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content+"\"/' "+self.G_NOTEFILE)
                 notif_msg(APP, "Note "+title+" Saved!")
                 return
             elif grp != "Minutes" and grp != "Private":

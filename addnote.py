@@ -256,7 +256,7 @@ class MyWindow(Gtk.Window):
                 f.close()
             else:
                 # notif_msg(APP, "Save mode not supported for "+self.G_NOTETITLE)
-                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Note\": \""+content+"\"/' "+self.G_NOTEFILE)
+                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content+"\"/' "+self.G_NOTEFILE)
                 notif_msg(APP, "Note "+title+" Saved!")
                 return
         else:
