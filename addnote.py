@@ -32,7 +32,7 @@ def generate_random_string(string_length=11):
 def notif_msg(app, msg):
     # icon = APPDIR+"/notebox.png"
     # os.system("notify-send -i "+icon+" Notebox \""+msg+"\"")
-    n = Notify.Notification.new(app, msg, "")
+    n = Notify.Notification.new("<b>" + APP + "</b>", msg, "")
     n.show()
 
 ##########################################################
@@ -40,11 +40,11 @@ def notif_msg(app, msg):
 
 G_MARGIN = 5
 HomeDir = os.environ['HOME']
-NOTEBOXCONF = HomeDir+"/.notebox/notebox.conf"
-BASEDIR = HomeDir+"/.notebox/notes"
+NOTEBOXCONF = HomeDir + "/.notebox/notebox.conf"
+BASEDIR = HomeDir + "/.notebox/notes"
 APP = "Notebox"
-APPDIR = HomeDir+"/.notebox"
-G_NOTESDAT = BASEDIR+"/notebox.dat"
+APPDIR = HomeDir + "/.notebox"
+G_NOTESDAT = BASEDIR + "/notebox.dat"
 filename = ""
 group = ""
 
@@ -54,11 +54,11 @@ group = ""
 class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="")
-        self.set_icon_from_file(APPDIR+"/notes.png")
+        self.set_icon_from_file(APPDIR + "/notes.png")
 
         self.set_default_size(500, 500)
         self.set_border_width(0)
-        self.NOTEBOXCONF = HomeDir+"/.notebox/notebox.conf"
+        self.NOTEBOXCONF = HomeDir + "/.notebox/notebox.conf"
         self.G_NOTETITLE = ""
         self.G_NOTEFILE = ""
         self.G_NOTEGRP = ""
@@ -78,19 +78,19 @@ class MyWindow(Gtk.Window):
         #######################
         # Read config file
         try:
-            self.G_EVERNOTEFLAG = subprocess.check_output("grep EVERNOTE "+self.NOTEBOXCONF+" | cut -d= -f 2", shell=True)
+            self.G_EVERNOTEFLAG = subprocess.check_output("grep EVERNOTE " + self.NOTEBOXCONF + " | cut -d= -f 2", shell=True)
         except:
             self.G_EVERNOTEFLAG = "0"
         self.G_EVERNOTEFLAG = self.G_EVERNOTEFLAG.rstrip('\n')
 
         try:
-            self.G_EVERNOTENOTEBLIST = subprocess.check_output("grep EVERNOTENOTEBLIST "+self.NOTEBOXCONF+" | cut -d= -f 2", shell=True)
+            self.G_EVERNOTENOTEBLIST = subprocess.check_output("grep EVERNOTENOTEBLIST " + self.NOTEBOXCONF + " | cut -d= -f 2", shell=True)
         except:
             self.G_EVERNOTENOTEBLIST = ""
         self.G_EVERNOTENOTEBLIST = self.G_EVERNOTENOTEBLIST.rstrip('\n')
 
         try:
-            self.G_DROPBOXFLAG = subprocess.check_output("grep -c DROPBOX=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_DROPBOXFLAG = subprocess.check_output("grep -c DROPBOX=1 " + self.NOTEBOXCONF, shell=True)
         except:
             self.G_DROPBOXFLAG = "0"
 
@@ -98,7 +98,7 @@ class MyWindow(Gtk.Window):
 
         if self.G_DROPBOXFLAG == "1":
             try:
-                self.G_DROPBOXDIR = subprocess.check_output("grep DROPBOXDIR "+self.NOTEBOXCONF+" | cut -d= -f 2", shell=True)
+                self.G_DROPBOXDIR = subprocess.check_output("grep DROPBOXDIR " + self.NOTEBOXCONF + " | cut -d= -f 2", shell=True)
             except:
                 dummy = None
 
@@ -108,14 +108,14 @@ class MyWindow(Gtk.Window):
                 self.G_DROPBOXFLAG = "0"
 
         try:
-            self.G_MINUTESFLAG = subprocess.check_output("grep -c MINUTES=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_MINUTESFLAG = subprocess.check_output("grep -c MINUTES=1 " + self.NOTEBOXCONF, shell=True)
         except:
             self.G_MINUTESFLAG = "0"
 
         self.G_MINUTESFLAG = self.G_MINUTESFLAG.rstrip('\n')
         if self.G_MINUTESFLAG == "1":
             try:
-                self.G_MINUTESDIR = subprocess.check_output("grep MINUTESDIR "+self.NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+                self.G_MINUTESDIR = subprocess.check_output("grep MINUTESDIR " + self.NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
             except:
                 dummy = None
 
@@ -125,39 +125,39 @@ class MyWindow(Gtk.Window):
                 self.G_MINUTESFLAG = "0"
 
         try:
-            self.G_MYNOTESGEARFLAG = subprocess.check_output("grep -c MYNOTESGEAR=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_MYNOTESGEARFLAG = subprocess.check_output("grep -c MYNOTESGEAR=1 " + self.NOTEBOXCONF, shell=True)
             self.G_MYNOTESGEARFLAG = self.G_MYNOTESGEARFLAG.rstrip('\n')
-            self.G_MYNOTESGEARDIR = subprocess.check_output("grep MYNOTESGEARDIR "+self.NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+            self.G_MYNOTESGEARDIR = subprocess.check_output("grep MYNOTESGEARDIR " + self.NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
             self.G_MYNOTESGEARDIR = self.G_MYNOTESGEARDIR.rstrip('\n')
         except:
             self.G_MYNOTESGEARFLAG = "0"
 
         try:
-            self.G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 " + self.NOTEBOXCONF, shell=True)
         except:
             dummy = None
 
         try:
-            self.G_REMINDERFLAG = subprocess.check_output("grep -c REMINDER=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_REMINDERFLAG = subprocess.check_output("grep -c REMINDER=1 " + self.NOTEBOXCONF, shell=True)
             self.G_REMINDERFLAG = self.G_REMINDERFLAG.rstrip('\n')
-            self.G_REMINDERDIR = subprocess.check_output("grep REMINDERDIR "+self.NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+            self.G_REMINDERDIR = subprocess.check_output("grep REMINDERDIR " + self.NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
             self.G_REMINDERDIR = self.G_REMINDERDIR.rstrip('\n')
         except:
             self.G_REMINDERFLAG = "0"
 
         try:
-            self.G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 "+self.NOTEBOXCONF, shell=True)
+            self.G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 " + self.NOTEBOXCONF, shell=True)
         except:
             dummy = None
 
         self.G_ENCFSFLAG = self.G_ENCFSFLAG.rstrip('\n')
         if self.G_ENCFSFLAG == "1":
             try:
-                self.G_ENCFSDIR = subprocess.check_output("grep ENCFSDIR "+self.NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
-                print "AA ",self.G_ENCFSDIR
+                self.G_ENCFSDIR = subprocess.check_output("grep ENCFSDIR " + self.NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
+                print "AA ", self.G_ENCFSDIR
             except:
                 dummy = None
-                print "dummmy ",self.G_ENCFSDIR
+                print "dummmy ", self.G_ENCFSDIR
             self.G_ENCFSDIR = self.G_ENCFSDIR.rstrip('\n')
             if self.G_ENCFSDIR == "":
                 self.G_ENCFSFLAG = "0"
@@ -224,30 +224,59 @@ class MyWindow(Gtk.Window):
 
 ##############################################################################
 
+
+    def mynotesgearsave(self, content, filepath):
+        os.system("cp -p " + filepath + " /tmp")
+        w = open(filepath, "w")
+        # split  new lines to remove from content
+        content_list = content.split('\n')
+        with open("/tmp/" + basename(filepath), "r") as f:
+            for line in f:
+                # line = line.rstrip("\n")
+                if len(line) > 0:
+                    if line.find("note_Notes") > 0:
+                        w.write(" \"note_Notes\": \"")
+                        nitem = 1
+                        for item in content_list:
+                            if len(item) > 0:
+                                if nitem == 1:
+                                    w.write(item)
+                                else:
+                                    w.write("\\n" + item)
+                                nitem = nitem + 1
+                        w.write("\",")
+                        # print line + "-- "
+                    else:
+                        # w.write(line+"\n")
+                        w.write(line)
+        w.close()
+
+#############################################################
+
     def __db_savenote(self, title, grp, filepath, content, savemode):
         global APP
         # Save the note content################################################
         if grp != "Minutes" and grp != "Private" and grp != "MyNotesGear":
             # f = codecs.open(BASEDIR+"/"+notefile,"w",'utf-8')
-            f = open(BASEDIR+"/"+self.G_NOTEFILE, "w")
+            f = open(BASEDIR + "/" + self.G_NOTEFILE, "w")
             f.write(content)
             f.close()
             currtime = int(time.time())
-            notif_msg(APP, "Saving note "+self.G_NOTETITLE)
+            notif_msg(APP, "Saving note " + self.G_NOTETITLE)
             if savemode == "create":
                 datfile = open(G_NOTESDAT, 'a')
-                line = self.G_NOTETITLE+";"+grp+";"+self.G_NOTEFILE+";"+str(currtime)+"\n"
+                line = self.G_NOTETITLE + ";" + grp + ";" + self.G_NOTEFILE + ";" + str(currtime) + "\n"
                 datfile.write(line)
                 datfile.close()
         elif grp == "MyNotesGear":
             if savemode == "create":
                 # Get the timestamp from the file path
                 arrcurrtime = filepath.split("/")
-                currtime = arrcurrtime[len(arrcurrtime)-1]
-                template_note = '{ "note_Id": '+currtime+','+"\n"+' "note_Alarmid": 0,'+"\n"+' "note_Due": 0,'+"\n"+' "note_Lastedit": '+currtime+','+"\n"+' "note_Issynced": false,'+"\n"+' "note_Isedited": true,'+"\n"+' "note_Isdropboxsynced": true,'+"\n"+' "note_Isdropboxedited": true,'+"\n"+' "note_SharedUrl": "",'+"\n"+' "note_Label": "[]",'+"\n"+' "note_Position": 2097151.5,'+"\n"+' "note_Title": "'+self.G_NOTETITLE+'",'+"\n"+' "note_Notes": " '
+                currtime = arrcurrtime[len(arrcurrtime) - 1]
+                template_note = '{ "note_Id": ' + currtime + ',' + "\n" + ' "note_Alarmid": 0,' + "\n" + ' "note_Due": 0,'+"\n"+' "note_Lastedit": '+currtime+','+"\n"+' "note_Issynced": false,'+"\n"+' "note_Isedited": true,'+"\n"+' "note_Isdropboxsynced": true,'+"\n"+' "note_Isdropboxedited": true,'+"\n"+' "note_SharedUrl": "",'+"\n"+' "note_Label": "[]",'+"\n"+' "note_Position": 2097151.5,'+"\n"+' "note_Title": "'+self.G_NOTETITLE+'",'+"\n"+' "note_Notes": " '
                 arraynote = content.split("\n")
                 for i in arraynote:
-                    template_note = template_note+i+'\n'
+                    template_note = template_note + i + '\n'
                 template_note = template_note[:-1] + '",'+"\n"+' "note_Color": "#2196F3",'+"\n"+' "note_Istimeactive": false,'+"\n"+' "note_Islocationactive": false,'+"\n"+' "note_Isarchived": false,'+"\n"+' "note_Isdeleted": false,'+"\n"+' "note_Ischecklist": false,'+"\n"+' "note_Isshared": false,'+"\n"+' "note_Hasfile": false,'+"\n"+' "note_Filepath": "",'+"\n"+' "note_Image": "",'+"\n"+' "note_Address": "",'+"\n"
                 template_note = template_note+' "note_Longitude": 0,'+"\n"+' "note_Latitude": 0,'+"\n"+' "note_FieldS1": "",'+"\n"+' "note_FieldS2": "",'+"\n"+' "note_FieldL1": 0,'+"\n"+' "note_FieldL2": 0,'+"\n"+' "note_FieldB1": false,'+"\n"+' "note_FieldB2": false'+"\n"+'}'
                 notif_msg(APP, "Saving note "+self.G_NOTETITLE)
@@ -256,7 +285,8 @@ class MyWindow(Gtk.Window):
                 f.close()
             else:
                 # notif_msg(APP, "Save mode not supported for "+self.G_NOTETITLE)
-                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content+"\"/' "+self.G_NOTEFILE)
+                self.mynotesgearsave(content, self.G_NOTEFILE)
+                # os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content+"\"/' "+self.G_NOTEFILE)
                 notif_msg(APP, "Note "+title+" Saved!")
                 return
         else:
@@ -369,7 +399,7 @@ class MyWindow(Gtk.Window):
                         #else:
                         frand = generate_random_string()
                         if grp != "Minutes" and grp != "Private" and grp != "MyNotesGear":
-                            notefile = grp+"/"+frand   # Save relative path
+                            notefile = grp + "/" + frand   # Save relative path
 
                         elif grp == "MyNotesGear" and self.G_MYNOTESGEARFLAG == "1":
                             notetitle = string.replace(notetitle, ' ', '_')
@@ -378,7 +408,7 @@ class MyWindow(Gtk.Window):
                             notetitle = string.replace(notetitle, ':', '_')
                             currtime = str(int(round(time.time())) * 1000)
                             # currtime= currtime.replace(".","")+"0"
-                            notefile = self.G_MYNOTESGEARDIR + "/"+currtime
+                            notefile = self.G_MYNOTESGEARDIR + "/" + currtime
                             # disable re-save the note
                             self.savebutton.set_sensitive(False)
                         elif grp == "Minutes" and self.G_MINUTESFLAG == "1":
@@ -386,13 +416,13 @@ class MyWindow(Gtk.Window):
                             notetitle = string.replace(notetitle, '/', '_')
                             notetitle = string.replace(notetitle, '-', '_')
                             notetitle = string.replace(notetitle, ':', '_')
-                            notefile = self.G_MINUTESDIR+"/"+notetitle+".txt"
+                            notefile = self.G_MINUTESDIR + "/" + notetitle + ".txt"
                         elif grp == "Private" and self.G_ENCFSFLAG == "1":
                             notetitle = string.replace(notetitle, ' ', '_')
                             notetitle = string.replace(notetitle, '/', '_')
                             notetitle = string.replace(notetitle, '-', '_')
                             notetitle = string.replace(notetitle, ':', '_')
-                            notefile = self.G_ENCFSDIR+"/"+notetitle+".txt"
+                            notefile = self.G_ENCFSDIR + "/" + notetitle + ".txt"
                         self.G_NOTEFILE = notefile
                         self.G_NOTETITLE = notetitle
                         self.G_NOTEGRP = grp
@@ -444,12 +474,13 @@ class MyWindow(Gtk.Window):
 ##########################################################
     def on_wrapbutton_clicked(self, widget):
         self.noteview.set_wrap_mode(widget.get_active())
+
 ##########################################################
 
     def __db_loadnotegroups(self):
 
         try:
-            output = subprocess.check_output("ls -1d "+BASEDIR+"/* | grep -v dat", shell=True)
+            output = subprocess.check_output("ls -1d " + BASEDIR + "/* | grep -v dat", shell=True)
         except:
             output = ""
         # del self.grplist[:]

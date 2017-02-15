@@ -5,6 +5,7 @@ import sys
 import socket
 import httplib
 import subprocess
+from os.path import basename
 from gi.repository import Gtk, Gio
 from gi.repository import Notify
 
@@ -150,10 +151,24 @@ class MyWindow(Gtk.Window):
 #############################################################
 
     def __db_getnotecontent(self, title, grp, filename):
-        content = ""
         if filename != "evernote":
             if grp == "MyNotesGear":
-                content = subprocess.check_output("grep note_Notes " + filename+" | cut -d:  -f 2 |  tr -d \\\" | tr -d ,", shell=True)
+                with open(filename, "r") as f:
+                    for line in f:
+                        if len(line) > 0:
+                            if line.find("note_Notes") > 0:
+                                tmpcontent = line
+                                break
+                tmp_list = tmpcontent.split('"')
+                content_list = tmp_list[3].split("\\n")
+                content = ""
+                nitem = 1
+                for item in content_list:
+                    if item != "":
+                        if nitem == 1:
+                            content = content + item
+                        else:
+                            content = content + "\n" + item
             elif grp != "Minutes" and grp != "Private" and grp != "Reminders":
                 # f = codecs.open( BASEDIR+"/"+filename,"r",'utf-8')
                 f = open(BASEDIR+"/"+filename, "r")
@@ -194,13 +209,39 @@ class MyWindow(Gtk.Window):
 
 #############################################################
 
+    def mynotesgearsave(self, content, filepath):
+        os.system("cp -p "+filepath+" /tmp")
+        w = open(filepath, "w")
+        # split  new lines to remove from content
+        content_list = content.split('\n')
+        with open("/tmp/" + basename(filepath), "r") as f:
+            for line in f:
+                # line = line.rstrip("\n")
+                if len(line) > 0:
+                    if line.find("note_Notes") > 0:
+                        w.write(" \"note_Notes\": \"")
+                        nitem = 1
+                        for item in content_list:
+                            if len(item) > 0:
+                                if nitem == 1:
+                                    w.write(item)
+                                else:
+                                    w.write("\\n" + item)
+                                nitem = nitem + 1
+                        w.write("\",")
+                        # print line + "-- "
+                    else:
+                        # w.write(line+"\n")
+                        w.write(line)
+        w.close()
+
+#############################################################
+
     def __db_savenotecontent(self, title, grp, filename, content):
         global APP
         if filename != "evernote":
             if grp == "MyNotesGear":
-                print "sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content.rstrip('\n')+"\"/g' "+filename
-                os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content.rstrip('\n')+"\"/g' "+filename)
-                # os.system("sed -i 's/\( \"note_Notes\": \"\).*\(\"\)/ \"note_Notes\": \""+content+"\"/' "+self.G_NOTEFILE)
+                self.mynotesgearsave(content, filename)
                 notif_msg(APP, "Note "+title+" Saved!")
                 return
             elif grp != "Minutes" and grp != "Private":
