@@ -7,14 +7,13 @@ import uuid
 import socket
 import httplib
 import gi
-from gi.repository import Gtk
-from gi.repository import AppIndicator3 as appindicator
-from gi.repository import Notify
 from os.path import basename
-
-gi.require_version('AppIndicator3', '0.1')
 gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+gi.require_version('AppIndicator3', '0.1')
+from gi.repository import AppIndicator3 as appindicator
 gi.require_version('Notify', '0.7')
+from gi.repository import Notify
 
 
 #########################################################
@@ -38,7 +37,7 @@ def UpdateGUI():
 def notif_msg(app, msg):
     # icon = APPDIR+"/notebox.png"
     # os.system("notify-send -i "+icon+" Notebox \""+msg+"\"")
-    n = Notify.Notification.new(app, msg, "")
+    n = Notify.Notification.new("<b>" + app + "</b>", msg, "")
     n.show()
 
 
@@ -58,7 +57,7 @@ def set_winsize(win):
     print("Monitor Heigh: %s, Width: %s" % (monitor.height, monitor.width))
     #  =========
 
-    win.set_default_size(monitor.width-monitor.width/3, monitor.height-monitor.height/3)
+    win.set_default_size(monitor.width - monitor.width / 3, monitor.height - monitor.height / 3)
     win.set_border_width(2)
     win.set_position(1)
 
@@ -71,12 +70,12 @@ def getKey(item):
 
 
 HomeDir = os.environ['HOME']
-NOTEBOXCONF = HomeDir+"/.notebox/notebox.conf"
-BASEDIR = HomeDir+"/.notebox/notes"
+NOTEBOXCONF = HomeDir + "/.notebox/notebox.conf"
+BASEDIR = HomeDir + "/.notebox/notes"
 APP = "Notebox"
-APPDIR = HomeDir+"/.notebox"
-G_NOTESDAT = BASEDIR+"/notebox.dat"
-LCKFILE = HomeDir+"/.notebox/notebox.lck"
+APPDIR = HomeDir + "/.notebox"
+G_NOTESDAT = ""
+LCKFILE = HomeDir + "/.notebox/notebox.lck"
 filename = ""
 group = ""
 
@@ -94,21 +93,50 @@ G_MINUTESFLAG = "0"
 G_MINUTESDIR = ""
 G_ENCFSFLAG = "0"
 G_ENCFSDIR = ""
+
+# Check arguments
+total = len(sys.argv)
+
+if total > 1:
+    if sys.argv[1] == "--setup":
+        print "\nInstalling required files to ~/.notebox..."
+        if not os.path.exists(APPDIR):
+            os.makedirs(APPDIR)
+            os.makedirs(APPDIR + "/notes")
+        os.system("touch " + APPDIR + "/notes/notebox.dat")
+        os.system("cp notebox.def ~/.notebox/notebox.conf")
+        os.system("cp notebox.desktop ~/.local/share/applications")
+        os.system("cp *.png ~/.icons")
+        os.system("cp *.png " + APPDIR)
+        os.system("cp notebox.conf " + APPDIR)
+        os.system("bash setlinks.sh")
+        print "Finished.\nNow run python notebox.py\n"
+        sys.exit(0)
+    elif sys.argv[1] == "--help":
+        print "\nCommand line options\nnotebox.py [--setup]"
+        sys.exit(0)
+
 try:
-    G_EVERNOTEFLAG = subprocess.check_output("grep -c EVERNOTE=1 "+NOTEBOXCONF, shell=True)
+    G_NOTESDAT = subprocess.check_output("grep NOTEDB " + NOTEBOXCONF + " | cut -d= -f 2", shell=True)
+except:
+    G_NOTESDAT = BASEDIR + "/notebox.dat"
+G_NOTESDAT = G_NOTESDAT.rstrip('\n')
+
+try:
+    G_EVERNOTEFLAG = subprocess.check_output("grep -c EVERNOTE=1 " + NOTEBOXCONF, shell=True)
 except:
     G_EVERNOTEFLAG = "0"
 G_EVERNOTEFLAG = G_EVERNOTEFLAG.rstrip('\n')
 
 try:
-    G_EVERNOTENOTEBLIST = subprocess.check_output("grep EVERNOTENOTEBLIST "+NOTEBOXCONF+" | cut -d= -f 2", shell=True)
+    G_EVERNOTENOTEBLIST = subprocess.check_output("grep EVERNOTENOTEBLIST " + NOTEBOXCONF + " | cut -d= -f 2", shell=True)
 except:
     G_EVERNOTENOTEBLIST = ""
 
 G_EVERNOTENOTEBLIST = G_EVERNOTENOTEBLIST.rstrip('\n')
 
 try:
-    G_DROPBOXFLAG = subprocess.check_output("grep -c DROPBOX=1 "+NOTEBOXCONF, shell=True)
+    G_DROPBOXFLAG = subprocess.check_output("grep -c DROPBOX=1 " + NOTEBOXCONF, shell=True)
 except:
     G_DROPBOXFLAG = "0"
 
@@ -117,7 +145,7 @@ G_DROPBOXFLAG = G_DROPBOXFLAG.rstrip('\n')
 
 if G_DROPBOXFLAG == "1":
     try:
-        G_DROPBOXDIR = subprocess.check_output("grep DROPBOXDIR "+NOTEBOXCONF+" | cut -d= -f 2", shell=True)
+        G_DROPBOXDIR = subprocess.check_output("grep DROPBOXDIR " + NOTEBOXCONF + " | cut -d= -f 2", shell=True)
     except:
         dummy = None
 
@@ -127,34 +155,34 @@ if G_DROPBOXFLAG == "1":
         G_DROPBOXFLAG = "0"
 
 try:
-    G_MINUTESFLAG = subprocess.check_output("grep -c MINUTES=1 "+NOTEBOXCONF, shell=True)
+    G_MINUTESFLAG = subprocess.check_output("grep -c MINUTES=1 " + NOTEBOXCONF, shell=True)
     G_MINUTESFLAG = G_MINUTESFLAG.rstrip('\n')
-    G_MINUTESDIR = subprocess.check_output("grep MINUTESDIR "+NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+    G_MINUTESDIR = subprocess.check_output("grep MINUTESDIR " + NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
     G_MINUTESDIR = G_MINUTESDIR.rstrip('\n')
 except:
     G_MINUTESFLAG = "0"
 
 try:
-    G_MYNOTESGEARFLAG = subprocess.check_output("grep -c MYNOTESGEAR=1 "+NOTEBOXCONF, shell=True)
+    G_MYNOTESGEARFLAG = subprocess.check_output("grep -c MYNOTESGEAR=1 " + NOTEBOXCONF, shell=True)
     G_MYNOTESGEARFLAG = G_MYNOTESGEARFLAG.rstrip('\n')
-    G_MYNOTESGEARDIR = subprocess.check_output("grep MYNOTESGEARDIR "+NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+    G_MYNOTESGEARDIR = subprocess.check_output("grep MYNOTESGEARDIR " + NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
     G_MYNOTESGEARDIR = G_MYNOTESGEARDIR.rstrip('\n')
 except:
     G_MYNOTESGEARFLAG = "0"
 
 try:
-    G_REMINDERFLAG = subprocess.check_output("grep -c REMINDER=1 "+NOTEBOXCONF, shell=True)
+    G_REMINDERFLAG = subprocess.check_output("grep -c REMINDER=1 " + NOTEBOXCONF, shell=True)
     G_REMINDERFLAG = G_REMINDERFLAG.rstrip('\n')
-    G_REMINDERDIR = subprocess.check_output("grep REMINDERDIR "+NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+    G_REMINDERDIR = subprocess.check_output("grep REMINDERDIR " + NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
     G_REMINDERDIR = G_REMINDERDIR.rstrip('\n')
 except:
     G_REMINDERFLAG = "0"
 
 
 try:
-    G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 "+NOTEBOXCONF, shell=True)
+    G_ENCFSFLAG = subprocess.check_output("grep -c ENCFS=1 " + NOTEBOXCONF, shell=True)
     G_ENCFSFLAG = G_ENCFSFLAG.rstrip('\n')
-    G_ENCFSDIR = subprocess.check_output("grep ENCFSDIR "+NOTEBOXCONF+"|cut -d= -f 2 ", shell=True)
+    G_ENCFSDIR = subprocess.check_output("grep ENCFSDIR " + NOTEBOXCONF + "|cut -d= -f 2 ", shell=True)
     G_ENCFSDIR = G_ENCFSDIR.rstrip('\n')
 except:
         G_ENCFSDIR = ""
@@ -170,6 +198,7 @@ class notes():
         self.notefile = notefile
         self.notestamp = tstamp
         self.header = header
+
 
 class MyWindow(Gtk.Window):
 
@@ -187,7 +216,7 @@ class MyWindow(Gtk.Window):
         self.labelevernnblist = None
 
         Gtk.Window.__init__(self, title="Notebox")
-        self.set_icon_from_file(APPDIR+"/notes.png")
+        self.set_icon_from_file(APPDIR + "/notes.png")
 
         # self.set_default_size(monitor.width-monitor.width/3, monitor.height-monitor.height/3)
         # self.set_border_width(2)
@@ -219,7 +248,7 @@ class MyWindow(Gtk.Window):
         tb_btn_delnote.connect("clicked", self.on_delbutton_clicked)
         tb_btn_delnote.set_tooltip_text("Delete Note")
         image = Gtk.Image()
-        image.set_from_file(APPDIR+"/trashcan.png")
+        image.set_from_file(APPDIR + "/trashcan.png")
         tb_btn_delnote.set_icon_widget(image)
         toolbar.add(tb_btn_delnote)
 
@@ -256,7 +285,6 @@ class MyWindow(Gtk.Window):
         scrollleft = Gtk.ScrolledWindow()
         scrollleft.show()
         scrollleft.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-
 
         ###########################
         #                              grpname, icon name,type
@@ -297,7 +325,7 @@ class MyWindow(Gtk.Window):
         # treeviewcolumn.pack_start(cellrendererpixbuf, False)
         # treeviewcolumn.add_attribute(cellrendererpixbuf, "pixbuf", 1)
 
-       # ########################
+#########################
         scrollleft.add(self.treeviewgrps)
 
         hpaned.add1(scrollleft)
@@ -338,7 +366,7 @@ class MyWindow(Gtk.Window):
 
     def on_addbutton_clicked(self, widget):
         print "addnote"
-        os.system(APPDIR+"/addnote.py")
+        os.system(APPDIR + "/addnote.py")
 #################################################################################
 
     def on_delbutton_clicked(self, widget):
@@ -522,7 +550,7 @@ class MyWindow(Gtk.Window):
         hbox_mynotes2.pack_start(labelmyn2, True, True, 0)
 
         self.buttonmyn = Gtk.Button("Choose Folder")
-        #self.buttonmyn.connect("clicked", self.on_minfolder_clicked)
+        # self.buttonmyn.connect("clicked", self.on_minfolder_clicked)
         hbox_mynotes2.pack_start(self.buttonmyn, True, True, 0)
         listbox.add(row)
 
@@ -651,45 +679,57 @@ class MyWindow(Gtk.Window):
                     G_DROPBOXDIR = self.drpfolder
                     f = open(NOTEBOXCONF, "a")
                     f.write("DROPBOX=1")
-                    f.write("DROPBOXDIR="+G_DROPBOXDIR)
+                    f.write("DROPBOXDIR=" + G_DROPBOXDIR)
                     f.close()
                 if os.path.isdir(self.drpfolder) and self.drpfolder != G_DROPBOXDIR:
                     print "DD 1"
                     G_DROPBOXDIR = self.drpfolder
-                    os.system("cat "+NOTEBOXCONF+" | grep -vE 'DROPBOXDIR=|DROPBOX=' | tee  "+NOTEBOXCONF)
+                    os.system("cat " + NOTEBOXCONF + " | grep -vE 'DROPBOXDIR=|DROPBOX=' | tee  " + NOTEBOXCONF)
                     G_DROPBOXFLAG = "1"
                     G_DROPBOXDIR = self.drpfolder
                     f = open(NOTEBOXCONF, "a")
                     f.write("DROPBOX=1\n")
-                    f.write("DROPBOXDIR="+G_DROPBOXDIR+"\n")
+                    f.write("DROPBOXDIR=" + G_DROPBOXDIR + "\n")
                     f.close()
+                os.system("bash " + APPDIR + "/setdropbox.sh")
 
             if switch_minutes.get_active():
                 if G_MINUTESFLAG == "0" and os.path.isdir(self.minfolder):
                     G_MINUTESDIR = self.minfolder
                     print "DD 2"
-                    os.system("cat "+NOTEBOXCONF+" | grep -vE 'MINUTESDIR=|MINUTES=' | tee  "+NOTEBOXCONF)
+                    os.system("cat " + NOTEBOXCONF + " | grep -vE 'MINUTESDIR=|MINUTES=' | tee  " + NOTEBOXCONF)
                     G_MINUTESFLAG = "1"
                     G_MINUTESDIR = self.minfolder
                     f = open(NOTEBOXCONF, "a")
                     f.write("MINUTES=1\n")
-                    f.write("MINUTESDIR="+G_MINUTESDIR+"\n")
+                    f.write("MINUTESDIR=" + G_MINUTESDIR + "\n")
+                    f.close()
+            if switch_encfs.get_active():
+                if G_ENCFSFLAG == "0" and os.path.isdir(self.encfsfolder):
+                    G_ENCFSDIR = self.encfsfolder
+                    print "DD 3"
+                    os.system("cat " + NOTEBOXCONF + " | grep -vE 'ENCFSDIR=|ENCFS=' | tee  " + NOTEBOXCONF)
+                    G_ENCFSFLAG = "1"
+                    G_ENCFSDIR = self.encfsfolder
+                    f = open(NOTEBOXCONF, "a")
+                    f.write("ENCFS=1\n")
+                    f.write("ENCFSDIR=" + G_ENCFSDIR + "\n")
                     f.close()
             if switch_evern.get_active():
                 if G_EVERNOTENOTEBLIST == "":
                     G_EVERNOTEFLAG = "0"
                     print "DD 3"
-                    os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
+                    os.system("cat " + NOTEBOXCONF + " | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  " + NOTEBOXCONF)
                     errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Saving settings")
                     errdialog.format_secondary_text("No Evernote notebooks selected!")
                     errdialog.run()
                     errdialog.destroy()
                 else:
                     if G_EVERNOTEFLAG == "0":
-                        os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
+                        os.system("cat " + NOTEBOXCONF + " | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  " + NOTEBOXCONF)
                         f = open(NOTEBOXCONF, "a")
                         f.write("EVERNOTE=1\n")
-                        f.write("EVERNOTENOTEBLIST="+G_EVERNOTENOTEBLIST+"\n")
+                        f.write("EVERNOTENOTEBLIST=" + G_EVERNOTENOTEBLIST + "\n")
                         f.close()
         dialog.destroy()
 
@@ -716,35 +756,35 @@ class MyWindow(Gtk.Window):
             # Find in Minutes
             if G_MINUTESFLAG == "1" and os.path.isdir(G_MINUTESDIR):
                 try:
-                    output = subprocess.check_output("ls -1 "+G_MINUTESDIR+"/*.txt", shell=True)
+                    output = subprocess.check_output("ls -1 " + G_MINUTESDIR + "/*.txt", shell=True)
                     tmplist = output.split("\n")
                     for item in tmplist:
                         if item != "":
                             header = ""
                             try:
-                                header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                                header = subprocess.check_output("cat '" + item + "' | head -3 ", shell=True)
                             except:
                                 header = ""
                             if text.lower() in header.lower():
                                 # self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
-                                foundlist.append(["** "+basename(item)+"** \n"+header, basename(item), "Minutes", item])
+                                foundlist.append(["** " + basename(item) + "** \n" + header, basename(item), "Minutes", item])
                 except:
                     print "No notes in Minutes"
             # Find in Private
             if G_ENCFSFLAG == "1" and os.path.isdir(G_ENCFSDIR):
                 try:
-                    output = subprocess.check_output("ls -1 "+G_ENCFSDIR+"/*.txt", shell=True)
+                    output = subprocess.check_output("ls -1 " + G_ENCFSDIR + "/*.txt", shell=True)
                     tmplist = output.split("\n")
                     for item in tmplist:
                         if item != "":
                             header = ""
                             try:
-                                header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                                header = subprocess.check_output("cat '" + item + "' | head -3 ", shell=True)
                             except:
                                 header = ""
                             if text.lower() in header.lower():
                                 # self.LStr_notes.append(["** "+basename(item)+"** \n"+header,basename(item),"Minutes",item])
-                                foundlist.append(["** "+basename(item)+"** \n"+header, basename(item), "Private", item])
+                                foundlist.append(["** " + basename(item) + "** \n" + header, basename(item), "Private", item])
                 except:
                     print "No notes in Encripted directory Private"
 
@@ -808,7 +848,7 @@ class MyWindow(Gtk.Window):
             # print("Select clicked")
             mynfolder = dialog.get_filename()
             if mynfolder != "" and os.path.isdir(mynfolder):
-                os.system(APPDIR+"/setupmynotesgear.sh "+mynfolder+" "+G_MYNOTESGEARDIR)
+                os.system(APPDIR + "/setupmynotesgear.sh " + mynfolder + " " + G_MYNOTESGEARDIR)
         dialog.destroy()
 
 #########################################################
@@ -827,7 +867,7 @@ class MyWindow(Gtk.Window):
             # print("Select clicked")
             encfsfolder = dialog.get_filename()
             if encfsfolder != "" and os.path.isdir(encfsfolder):
-                os.system(APPDIR+"/setupencfs.sh "+encfsfolder+" "+G_ENCFSDIR)
+                os.system(APPDIR + "/setupencfs.sh " + encfsfolder + " " + G_ENCFSDIR)
         dialog.destroy()
 #########################################################
 
@@ -879,7 +919,7 @@ class MyWindow(Gtk.Window):
         grptype = model[iter_][2]
 
         if grptype == "folder":
-            messagedialog = Gtk.MessageDialog(message_format="Rename note group "+group+"? \nAre you sure?")
+            messagedialog = Gtk.MessageDialog(message_format="Rename note group " + group + "? \nAre you sure?")
 
             messagedialog.set_property("message-type", Gtk.MessageType.ERROR)
             messagedialog.add_button("OK", Gtk.ResponseType.OK)
@@ -900,7 +940,7 @@ class MyWindow(Gtk.Window):
 
         if group != "Add Group..." and grptype != "evernote" and grptype != "reminders" and grptype != "minutes" and grptype != "private":
             print "Siiii"
-            messagedialog = Gtk.MessageDialog(message_format="Delete note group "+group+"? \nAll notes in this group will be deleted too!")
+            messagedialog = Gtk.MessageDialog(message_format="Delete note group " + group + "? \nAll notes in this group will be deleted too!")
 
             messagedialog.set_property("message-type", Gtk.MessageType.ERROR)
             messagedialog.add_button("OK", Gtk.ResponseType.OK)
@@ -992,15 +1032,15 @@ class MyWindow(Gtk.Window):
                     if i == 0:
                         nblist = model[item][0]
                     else:
-                        nblist = nblist+","+model[item][0]
-                    i = i+1
+                        nblist = nblist + "," + model[item][0]
+                    i = i + 1
                 if nblist != "":
                     if nblist != G_EVERNOTENOTEBLIST:
                         G_EVERNOTENOTEBLIST = nblist
-                        os.system("cat "+NOTEBOXCONF+" | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  "+NOTEBOXCONF)
+                        os.system("cat " + NOTEBOXCONF + " | grep -vE 'EVERNOTENOTEBLIST=|EVERNOTE=' | tee  " + NOTEBOXCONF)
                         f = open(NOTEBOXCONF, "a")
                         f.write("EVERNOTE=1\n")
-                        f.write("EVERNOTENOTEBLIST="+G_EVERNOTENOTEBLIST)+"\n"
+                        f.write("EVERNOTENOTEBLIST=" + G_EVERNOTENOTEBLIST) + "\n"
                         f.close()
                         self.labelevernnblist.set_text(G_EVERNOTENOTEBLIST)
                 else:
@@ -1029,14 +1069,14 @@ class MyWindow(Gtk.Window):
     def on_treeviewgrp_activated(self, widget, path, column):
         print "row activated "
         treesel = self.treeviewgrps.get_selection()
-        model, iter_= treesel.get_selected()
+        model, iter_ = treesel.get_selected()
         item = model.get(iter_, 0)
         group = model[iter_][0]
         grptype = model[iter_][2]
         if group == "Add Group...":
             self.__db_addnotegroup()
         else:
-            print "XX "+group + " - " + grptype
+            print "XX " + group + " - " + grptype
             self.__db_loadnotesbygrp(group, grptype)
 
 #####################################################################
@@ -1048,8 +1088,8 @@ class MyWindow(Gtk.Window):
         item = model.get(iter_, 0)
         title, group, filepath = model[iter_][1], model[iter_][2], model[iter_][3]
         # print model[iter_][0]+"--"+model[iter_][1]+"--"+model[iter_][2]
-        print APPDIR+"/opennote.py -t '"+title+"' -g "+group+" -f \""+filepath+"\""
-        os.system(APPDIR+"/opennote.py -t '"+title+"' -g "+group+" -f \""+filepath+"\" &")
+        print APPDIR + "/opennote.py -t '" + title + "' -g " + group + " -f \"" + filepath + "\""
+        os.system(APPDIR + "/opennote.py -t '" + title + "' -g " + group + " -f \"" + filepath + "\" &")
 
 
     #Low level Utility funcs ###################################################
@@ -1078,19 +1118,19 @@ class MyWindow(Gtk.Window):
                 errdialog.format_secondary_text("Group name is reserved. Try another one!")
                 errdialog.run()
                 errdialog.destroy()
-            elif os.path.isdir(BASEDIR+"/"+groupname):
+            elif os.path.isdir(BASEDIR + "/" + groupname):
                 errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error Creating Group")
                 errdialog.format_secondary_text("Group already exists!")
                 errdialog.run()
                 errdialog.destroy()
             else:
-                result = os.system("mkdir "+BASEDIR+"/"+group)
+                result = os.system("mkdir " + BASEDIR + "/" + group)
                 if result == 0:
                     self.LStr_grps.insert(pos, [group, "folder", "folder"])
                     seld.LStr_grps.remove(pos)
 
                 else:
-                    notif_msg(APP, "Error Renaming group "+group)
+                    notif_msg(APP, "Error Renaming group " + group)
 
     # Low level Utility funcs ##################################################
 
@@ -1119,19 +1159,19 @@ class MyWindow(Gtk.Window):
                 errdialog.format_secondary_text("Group name is reserved. Try another one!")
                 errdialog.run()
                 errdialog.destroy()
-            elif os.path.isdir(BASEDIR+"/"+groupname):
+            elif os.path.isdir(BASEDIR + "/" + groupname):
                 errdialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error Creating Group")
                 errdialog.format_secondary_text("Group already exists!")
                 errdialog.run()
                 errdialog.destroy()
             else:
-                result = os.system("mkdir "+BASEDIR+"/"+groupname)
+                result = os.system("mkdir " + BASEDIR + "/" + groupname)
                 if result == 0:
                     self.LStr_grps.append([groupname, "folder", "folder"])
 
                     # self.__db_loadnotegroups()
                 else:
-                    notif_msg(APP, "Error creating group "+groupname)
+                    notif_msg(APP, "Error creating group " + groupname)
 
         dialog.destroy()
 
@@ -1139,14 +1179,14 @@ class MyWindow(Gtk.Window):
 ###################################################################
     def __db_delgrp(self, group):
         if group != "":
-            cmd = "rm -rf "+BASEDIR+"/"+group
+            cmd = "rm -rf " + BASEDIR + "/" + group
             os.system(cmd)
 
 ###################################################################
     def __db_loadnotegroups(self):
         global G_EVERNOTENOTEBLIST
         try:
-            output = subprocess.check_output("ls -1d "+BASEDIR+"/* | grep -v dat", shell=True)
+            output = subprocess.check_output("ls -1d " + BASEDIR + "/* | grep -v dat", shell=True)
         except:
             output = ""
         # del self.grplist[:]
@@ -1205,7 +1245,7 @@ class MyWindow(Gtk.Window):
                 values = line2.split(";")
                 header = ""
                 try:
-                    header = subprocess.check_output("cat '"+BASEDIR+"/"+values[2]+"' | head -3 ", shell=True)
+                    header = subprocess.check_output("cat '" + BASEDIR + "/" + values[2] + "' | head -3 ", shell=True)
                 except:
                     header = ""
                 n = notes(values[0], values[1], values[2], values[3], header)
@@ -1230,16 +1270,16 @@ class MyWindow(Gtk.Window):
                         # self.notelist.append(n)
                         # #self.LStr_notes.append([n.title])
                         # notelist.append([n.title,n.group,n.notestamp,item,n.header])
-            #e xcept:
-                 # print "No notes in Private Dir"
+        # e xcept:
+        # print "No notes in Private Dir"
         self.sortnotelist = sorted(notelist, key=getKey, reverse=True)
-        for item in  self.sortnotelist:
-            #print "CC "+item[0]+"-"+item[1]+"-"+item[3]+"--"+item[2]
-            self.LStr_notes.append(["** "+item[0]+" **\n"+item[4], item[0], item[1], item[3]])
+        for item in self.sortnotelist:
+            # print "CC "+item[0]+"-"+item[1]+"-"+item[3]+"--"+item[2]
+            self.LStr_notes.append(["** " + item[0] + " **\n" + item[4], item[0], item[1], item[3]])
 
 ################################################################
     def __db_delnotesbygrp(self, group):
-        os.system("cp -p "+G_NOTESDAT+" /tmp/notebox.dat")
+        os.system("cp -p " + G_NOTESDAT + " /tmp/notebox.dat")
         w = open(G_NOTESDAT, "w")
         with open("/tmp/notebox.dat", "r") as f:
             for line in f:
@@ -1249,17 +1289,17 @@ class MyWindow(Gtk.Window):
                         w.write(line)
         w.close()
 ################################################################
-    ###xxx
+
     def __db_delnote(self, title, group, filepath):
         if group == "Minutes" or group == "Reminders" or group == "Private" or group == "MyNotesGear":
-            print "About to remove Minutes note: "+filepath
+            print "About to remove Minutes note: " + filepath
             os.remove(filepath)
         elif filepath == "evernote":
             print "About to delete note from Evernote notebook"
         else:
-            print "erasing native note "+title+" - "+filepath
+            print "erasing native note " + title + " - " + filepath
             i = 0
-            os.system("cp -p "+G_NOTESDAT+" /tmp/notebox.dat")
+            os.system("cp -p " + G_NOTESDAT + " /tmp/notebox.dat")
             w = open(G_NOTESDAT, "w")
             for item in self.sortnotelist:
                 print "       found note!"
@@ -1287,18 +1327,18 @@ class MyWindow(Gtk.Window):
         # ####Load Minutes notes
         if grptype == "minutes" and os.path.isdir(G_MINUTESDIR):
             try:
-                output = subprocess.check_output("ls -1 "+G_MINUTESDIR+"/*.txt", shell=True)
+                output = subprocess.check_output("ls -1 " + G_MINUTESDIR + "/*.txt", shell=True)
                 tmplist = output.split("\n")
                 for item in tmplist:
                     if item != "":
                         header = ""
                         try:
-                            header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                            header = subprocess.check_output("cat '" + item + "' | head -3 ", shell=True)
                         except:
                             header = ""
                         # n=notes(basename(item),"Minutes",item,int(time.time()),header)
                         # self.notelist.append(n)
-                        self.LStr_notes.append(["** "+basename(item)+"** \n"+header, basename(item), "Minutes", item])
+                        self.LStr_notes.append(["** " + basename(item) + "** \n" + header, basename(item), "Minutes", item])
                         # notelist.append([n.title,n.group,n.notestamp,item,header])
             except:
                 print "No notes in Minutes"
@@ -1306,34 +1346,34 @@ class MyWindow(Gtk.Window):
         # #### Load MytNotesGear notes
         if grptype == "mynotesgear" and os.path.isdir(G_MYNOTESGEARDIR):
             try:
-                output = subprocess.check_output("ls -1r "+G_MYNOTESGEARDIR, shell=True)
+                output = subprocess.check_output("ls -1r " + G_MYNOTESGEARDIR, shell=True)
                 tmplist = output.split("\n")
                 for item in tmplist:
                     if item != "":
                         header = ""
 
-                        ntitle = subprocess.check_output("grep note_Title " + G_MYNOTESGEARDIR+"/"+item+" | cut -d: -f 2 |  tr -d \\\" | tr -d ,", shell=True)
+                        ntitle = subprocess.check_output("grep note_Title " + G_MYNOTESGEARDIR + "/" + item + " | cut -d: -f 2 |  tr -d \\\" | tr -d ,", shell=True)
                         ntitle = ntitle.strip("\n")
-                        nisarchived = subprocess.check_output("grep Isarchived " + G_MYNOTESGEARDIR+"/"+item+" | cut -d: -f 2 ", shell=True)
+                        nisarchived = subprocess.check_output("grep Isarchived " + G_MYNOTESGEARDIR + "/" + item + " | cut -d: -f 2 ", shell=True)
                         nisarchived = nisarchived.strip("\n")
-                        print "AA "+ntitle + "--"+nisarchived
+                        print "AA " + ntitle + "--" + nisarchived
                         # title+header,title,group,filepath o evernote
                         if nisarchived == " false,":
-                            self.LStr_notes.append(["** "+ntitle.lstrip(" ")+" **", ntitle.lstrip(" "), "MyNotesGear", G_MYNOTESGEARDIR+"/"+item])
+                            self.LStr_notes.append(["** " + ntitle.lstrip(" ") + " **", ntitle.lstrip(" "), "MyNotesGear", G_MYNOTESGEARDIR + "/" + item])
 
             except:
                 print "No notes in MyNotesGear"
         # #### Load Reminders notes
         if grptype == "reminders" and os.path.isdir(G_REMINDERDIR):
             try:
-                output = subprocess.check_output("ls -1r "+G_REMINDERDIR, shell=True)
+                output = subprocess.check_output("ls -1r " + G_REMINDERDIR, shell=True)
                 tmplist = output.split("\n")
                 for item in tmplist:
                     if item != "":
                         header = ""
-                        ntitle = subprocess.check_output("cat \"" + G_REMINDERDIR+"/"+item+"\"", shell=True)
+                        ntitle = subprocess.check_output("cat \"" + G_REMINDERDIR + "/" + item + "\"", shell=True)
                         ntitle = ntitle.strip("\n")
-                        self.LStr_notes.append(["** "+ntitle.lstrip(" ")+" **", ntitle.lstrip(" "), "Reminders", G_REMINDERDIR+"/"+item])
+                        self.LStr_notes.append(["** " + ntitle.lstrip(" ") + " **", ntitle.lstrip(" "), "Reminders", G_REMINDERDIR + "/" + item])
 
             except:
                 print "No notes in Reminder dir"
@@ -1341,18 +1381,18 @@ class MyWindow(Gtk.Window):
         # print "AA "+G_ENCFSDIR+"-"+grptype+"--"
         if grptype == "private" and os.path.isdir(G_ENCFSDIR):
             try:
-                output = subprocess.check_output("ls -1 "+G_ENCFSDIR+"/*", shell=True)
+                output = subprocess.check_output("ls -1 " + G_ENCFSDIR + "/*", shell=True)
                 tmplist = output.split("\n")
                 for item in tmplist:
                     if item != "":
                         header = ""
                         try:
-                            header = subprocess.check_output("cat '"+item+"' | head -3 ", shell=True)
+                            header = subprocess.check_output("cat '" + item + "' | head -3 ", shell=True)
                         except:
                             header = ""
                         # n=notes(basename(item),"Minutes",item,int(time.time()),header)
                         # self.notelist.append(n)
-                        self.LStr_notes.append(["** "+basename(item)+"** \n"+header, basename(item), "Private", item])
+                        self.LStr_notes.append(["** " + basename(item) + "** \n" + header, basename(item), "Private", item])
                         print "DD item: ", item
                         # notelist.append([n.title,n.group,n.notestamp,item,header])
             except:
@@ -1368,7 +1408,7 @@ class MyWindow(Gtk.Window):
                 conn.request('HEAD', '/')  # Just send a HTTP HEAD request
                 res = conn.getresponse()
 
-                output = subprocess.check_output("geeknote find --search '*' --notebooks "+grp+" | grep 1970 | tr -s ' '", shell=True)
+                output = subprocess.check_output("geeknote find --search '*' --notebooks " + grp + " | grep 1970 | tr -s ' '", shell=True)
 
                 tmplist = output.split("\n")
 
@@ -1392,7 +1432,7 @@ class MyWindow(Gtk.Window):
             for item in self.sortnotelist:
                 # if item[1] == grp or grp == "All Notes":
                 if item[1] == grp:
-                    self.LStr_notes.append(["** "+item[0]+"** \n"+item[4], item[0], item[1], item[3]])
+                    self.LStr_notes.append(["** " + item[0] + "** \n" + item[4], item[0], item[1], item[3]])
 ###########################################################################
 
 
@@ -1402,7 +1442,7 @@ def cbk_shownotes(widget):
 
 
 def cbk_addnote(widget):
-    os.system(APPDIR+"/addnote.py &")
+    os.system(APPDIR + "/addnote.py &")
 
 
 def cbk_quit(widget):
@@ -1410,8 +1450,14 @@ def cbk_quit(widget):
 
 
 def cbk_about(widget):
-    print "About"
-
+    global VERSION
+    aboutdialog = Gtk.AboutDialog()
+    aboutdialog.set_name(APP)
+    aboutdialog.set_version(VERSION)
+    aboutdialog.set_comments("Simple note taking App for Linux")
+    aboutdialog.set_authors(["Antonio Villarroel"])
+    aboutdialog.run()
+    aboutdialog.destroy()
 # ---------------------------------------------------------------------------------------
 
 

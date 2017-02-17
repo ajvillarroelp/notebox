@@ -44,7 +44,7 @@ NOTEBOXCONF = HomeDir + "/.notebox/notebox.conf"
 BASEDIR = HomeDir + "/.notebox/notes"
 APP = "Notebox"
 APPDIR = HomeDir + "/.notebox"
-G_NOTESDAT = BASEDIR + "/notebox.dat"
+G_NOTESDAT = ""
 filename = ""
 group = ""
 
@@ -77,6 +77,13 @@ class MyWindow(Gtk.Window):
 
         #######################
         # Read config file
+
+        try:
+            G_NOTESDAT = subprocess.check_output("grep NOTEDB " + NOTEBOXCONF + " | cut -d= -f 2", shell=True)
+        except:
+            G_NOTESDAT = BASEDIR + "/notebox.dat"
+        G_NOTESDAT = G_NOTESDAT.rstrip('\n')
+
         try:
             self.G_EVERNOTEFLAG = subprocess.check_output("grep EVERNOTE " + self.NOTEBOXCONF + " | cut -d= -f 2", shell=True)
         except:
